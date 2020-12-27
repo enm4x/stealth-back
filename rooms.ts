@@ -8,9 +8,29 @@ interface userMessage {
     body: string,
 }
 
-const broadcastEvent = (obj: userMessage)  => {
+interface frame {
+    id: string,
+    type: string,
+    content: string
+}
+
+let registeredusers : string[] = [];
+
+const broadcastMessage = (obj: userMessage)  => {
     sockets.forEach((ws: WebSocket)=>{
         ws.send(JSON.stringify(obj));
+    })
+} 
+
+const broadcastUsers = (obj: Array<string>)  => {
+    sockets.forEach((ws: WebSocket)=>{
+        ws.send(JSON.stringify({type: "registered-users", obj}));
+    })
+} 
+
+const broadcastNewUser = (obj: Array<string>)  => {
+    sockets.forEach((ws: WebSocket)=>{
+        ws.send(JSON.stringify({type: "new-user", obj}));
     })
 } 
 
@@ -30,10 +50,26 @@ const newUserSocket = async (ws: WebSocket) => {
         if (typeof ev === 'string'){
             const eventObject = JSON.parse(ev);
             console.log("message received", ev);
-            broadcastEvent(eventObject);
+            handleRequest(eventObject);
         }      
     }
     
+}
+
+
+const handleRequest = (ev: frame)  => {
+    if (ev.type === "register" ){
+        console.log("this is a user connection request");
+        registeredusers.push(ev.id.toString())
+        console.log("tableau registered users : ", registeredusers)
+        broadcastUsers(registeredusers);
+    }
+
+    if (ev.type === "message"){
+        let temp : userMessage = {name: ev.id, body: ev.content}
+        broadcastMessage(temp);
+    }
+
 }
 
 export { newUserSocket };
