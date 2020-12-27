@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  deno:
+    image: "stealthbackend"
+    build: .
+    ports:
+      - "8088:8088"
+    networks: 
+      - deno
+    
+networks:
+  deno: {}
